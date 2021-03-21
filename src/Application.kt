@@ -101,6 +101,7 @@ fun Application.module(testing: Boolean = false) {
                     val gameState = Game.getGameState()
                     val json = """
                         {
+                            "action": "update",
                             "players": ${gameState.Players},
                             "boardState" : ${gameState.boardState}
                         }
