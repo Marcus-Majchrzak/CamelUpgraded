@@ -50,20 +50,14 @@ fun Application.module(testing: Boolean = false) {
 
         val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
         webSocket("/ws/camelupgraded") {
-            val Game = Game(5)
+            val _gameAdapter = GameAdapter()
             println("Adding user!")
             val thisConnection = Connection(this)
             connections += thisConnection
             try {
-                send("""
-                     {
-                        "action": "init",
-                        "data": {
-                            "id": "${thisConnection.name}"
-                         }
-                     } 
-                     """.trimIndent()
-                )
+                val initialResponse = _gameAdapter.getInitiateMessage(thisConnection.name.toString())
+                println(initialResponse)
+                send(initialResponse)
                 for (frame in incoming) {
                     frame as? Frame.Text ?: continue
                     val receivedText = frame.readText()
@@ -71,44 +65,11 @@ fun Application.module(testing: Boolean = false) {
                     //DEBUGGING
                     val textWithUsername = "[${thisConnection.name}]: $receivedText"
                     println(textWithUsername)
-
                     println(receivedText)
-                    val response = Klaxon().parse<Action>(receivedText)
-                    if (response != null) {
-                        when(response.action) {
-                            "move" -> Game.moveAction((response as ActionMove).id.toInt())
-                            "leg-bet" -> {
-                                val action = response as ActionLegBet
-                                val camel = stringToCamel(action.camel) ?: throw IllegalArgumentException("Invalid Camel Type")
-                                Game.legBetAction(action.id.toInt(), camel)
-                            }
-                            "race-bet" -> {
-                                val action = response as ActionRaceBet
-                                val camel = stringToCamel(action.camel) ?: throw IllegalArgumentException("Invalid Camel Type")
-                                val betType = stringToRaceBetType(action.betType) ?: throw IllegalArgumentException("Invalid Race Bet Type")
-                                Game.raceBetAction(action.id.toInt(), camel, betType)
-                            }
-                            "place-tile" -> {
-                                val action = response as ActionPlaceTile
-                                val tileType = stringToTileType(action.tileType) ?: throw IllegalArgumentException("Invalid Tile Type")
-                                Game.tileAction(action.id.toInt(), action.space, tileType)
-                            }
-                        }
-                    }
-                    else {
-                        //CHECK FOR ERRORS
-                    }
-                    val gameState = Game.getGameState()
-                    val json = """
-                        {
-                            "action": "update",
-                            "players": ${gameState.Players},
-                            "boardState" : ${gameState.boardState}
-                        }
-                    """.trimIndent()
-                    println(json)
-                    send(json)
 
+                    val response = Klaxon().parse<Action>(receivedText)
+                    _gameAdapter.parseResponse(response)
+                    send(_gameAdapter.getUpdateMessage(thisConnection.name.toString()))
 
                 }
             } catch (e: Exception) {
@@ -120,4 +81,3 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 }
-
