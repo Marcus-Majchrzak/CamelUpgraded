@@ -3,11 +3,11 @@ package classes
 class Player(id: String, name: String?) {
     private val _id : String = id
     private var _name: String = name ?: "Player_$id"
-    private var _cash: Int = startingCash
+    private var _money: Int = startingCash
     private var _legBets: MutableList<LegBet> = arrayListOf()
 
     fun changeMoney(income: Int) {
-        _cash += income
+        _money += income
     }
     fun addBet(bet: LegBet) {
         _legBets.add(bet)
@@ -23,9 +23,26 @@ class Player(id: String, name: String?) {
         _legBets = arrayListOf()
     }
     override fun toString(): String {
-        return  "\"$_name\": {\n" +
-                "\"money\": $_cash\n" +
-                //TODO ADD LEG BETSs
-                "}\n"
+
+        val stringLegBet = if(_legBets.size > 0) {
+            _legBets.map{ bet ->
+                """
+            {
+                "value": ${bet.value},
+                "camel": "${bet.camel.toString().toLowerCase()}"
+            }
+            """
+            }.reduce{a, b -> "$a,\n$b"}
+        }
+        else{
+            ""
+        }
+
+        return """
+            "$_id": {
+            "name": "$_name",
+            "money": $_money,
+            "legBets": [$stringLegBet]
+            }""".trimIndent()
     }
 }
