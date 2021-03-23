@@ -54,15 +54,6 @@ data class LegBet(val camel: Camels, val value: Int)
 data class DiceRoll(val camel: Camels, val move: Int)
 data class WinningCamels(val winner: Camels, val runnerUp: Camels)
 
-data class GameState(
-    val Players: String,
-    val boardState: String
-)
-data class BoardState(
-    val CamelPositions: String,
-    val LegBids: String
-)
-
 @TypeFor(field = "action", adapter = ActionTypeAdapter::class)
 open class Action(val action: String)
 data class ActionMove(val id: String): Action("move")

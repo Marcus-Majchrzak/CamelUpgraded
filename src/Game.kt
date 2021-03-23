@@ -82,17 +82,13 @@ class Game(numOfPlayers: Int) {
             }
         }
     }
-    fun getGameState(): GameState {
-        val boardState = _board.getBoardState()
-        val boardStateStr = """
-                        {
-                            "camelPositions": ${boardState.CamelPositions},
-                            "legBids" : ${boardState.LegBids}
-                        }
-                    """.trimIndent()
-
-        var players = _players.map { it.toString() }.reduce{a, b -> "$a,$b"}
-        players = "{${players}}"
-        return GameState(players, boardStateStr)
+    override fun toString(): String {
+        var playersStr = _players.map { it.toString() }.reduce{a, b -> "$a,$b"}
+        return """
+            {
+            "players": {${playersStr}},
+            "boardState" : $_board
+            }
+            """.trimIndent()
     }
 }

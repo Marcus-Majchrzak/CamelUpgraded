@@ -69,6 +69,7 @@ fun Application.module(testing: Boolean = false) {
 
                     val response = Klaxon().parse<Action>(receivedText)
                     _gameAdapter.parseResponse(response)
+                    println(_gameAdapter.getUpdateMessage(thisConnection.name.toString()))
                     send(_gameAdapter.getUpdateMessage(thisConnection.name.toString()))
 
                 }

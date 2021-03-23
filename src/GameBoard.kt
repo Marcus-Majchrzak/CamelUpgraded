@@ -118,25 +118,42 @@ class GameBoard {
     fun getLoserBets(): ArrayDeque<RaceBet>  {
         return _loserBets;
     }
-    fun getBoardState(): BoardState {
+    override fun toString(): String {
         //TODO MAKE NOT SPAGHETTI
+
+        //Stringify CamelLocation
         val stringLocation = _board.map{
                 space -> space.map {
-            "\"${it.toString().toLowerCase()}\""
+                    "\"${it.toString().toLowerCase()}\""
                 }.toString()
         }.toString()
-        var stringLegBet  = _camelLegBets.map{ bets ->
+
+        //Stringify Leg Bet
+        val stringLegBet  = _camelLegBets.map{ bets ->
             "\"${bets.key.toString().toLowerCase()}\":" +
                     bets.value.map { bet ->
                         bet.value
                     }.toString()
         }.reduce{a, b -> "$a,$b"}
-        stringLegBet = "{${stringLegBet}}"
-//            """
-//            {
-//            ${
-//            }
-//        """.trimIndent()
-        return BoardState(stringLocation, stringLegBet)
+
+        //Stringify diceRolled
+        val diceRolled = if(_pyramid.diceRolled().isNotEmpty()) {
+            _pyramid.diceRolled().map{ roll ->
+                """{
+                "color": "${roll.camel.toString().toLowerCase()}",
+                "value": ${roll.move}
+                }
+            """.trimMargin()
+            }.reduce{a, b -> "$a,$b"}
+        }
+        else ""
+
+        return """
+                        {
+                            "camelPositions": ${stringLocation},
+                            "legBids" : {${stringLegBet}},
+                            "diceRolled" : [$diceRolled]
+                        }
+                    """.trimIndent()
     }
 }

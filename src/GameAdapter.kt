@@ -2,22 +2,13 @@ import classes.*
 
 class GameAdapter {
     private val _game = Game(10)
-    private fun getGameState():String {
-        val gameState = _game.getGameState()
-        println(gameState.Players);
-        return """
-            {
-            "players": ${gameState.Players},
-            "boardState" : ${gameState.boardState}
-            }
-            """.trimIndent()
-    }
+
     fun getInitiateMessage(id:String): String{
         return """
              {
                 "action": "init",
                 "id": "$id",
-                "data": ${getGameState()}
+                "data": $_game
              } 
              """.trimIndent()
     }
@@ -25,7 +16,7 @@ class GameAdapter {
         return """
              {
                 "action": "update",
-                "data": ${getGameState()}
+                "data": $_game
              } 
              """.trimIndent()
     }
