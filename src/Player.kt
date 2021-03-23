@@ -24,7 +24,7 @@ class Player(id: String, name: String?) {
     }
     override fun toString(): String {
 
-        val stringLegBet = if(_legBets.size > 0) {
+        val stringLegBet = if (_legBets.size > 0) {
             _legBets.map{ bet ->
                 """
             {

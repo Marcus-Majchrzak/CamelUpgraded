@@ -12,22 +12,23 @@ import io.ktor.websocket.webSocket
 class Main {
     companion object {
         @JvmStatic
-        fun main(args : Array<String>) {
+        fun main(args: Array<String>) {
             val game = Game(5);
-            val api  = GameAPI()
+            val api = GameAPI()
             game.setAPI(api)
             api.setGame(game)
             io.ktor.server.netty.EngineMain.main(args)
         }
     }
 }
+
 @Suppress("unused")
 fun Application.module() {
     install(WebSockets)
     routing {
         webSocket("/chat") {
             send("You are connected!")
-            for(frame in incoming) {
+            for (frame in incoming) {
                 frame as? Frame.Text ?: continue
                 val receivedText = frame.readText()
                 send("You said: $receivedText")
