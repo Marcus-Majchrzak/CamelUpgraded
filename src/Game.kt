@@ -1,27 +1,28 @@
 package classes
 
-class Game(numOfPlayers: Int) {
+class Game(maxPlayers: Int) {
     private lateinit var _gameAPI: GameAPI;
+    private val _maxPlayers = maxPlayers;
     private val _board = GameBoard()
-    private var _players: Array<Player> = Array(numOfPlayers) { Player(it.toString(), null) }
+    private var _players: ArrayList<Player> = arrayListOf()
 
     fun setAPI(api: GameAPI) {
         _gameAPI = api
     }
 
-    fun playGame() {
-        legBetAction(1, Camels.BLUE)
-        moveAction(1)
-        moveAction(1)
-        moveAction(1)
-        moveAction(1)
-        moveAction(1)
-        println(_players[1])
-
+    fun addPlayer(id: Int){
+        if(_players.size < this._maxPlayers){
+            _players.add(Player(id))
+        }
+        else{
+            //TODO error for max players
+        }
+    }
+    fun startGame() {
+        //TODO
     }
 
     fun moveAction(id: Int) {
-        println("DID MOVE ACTION")
         _board.moveAction()
         _players[id].changeMoney(1)
         if (_board.raceOver()) {
@@ -29,28 +30,23 @@ class Game(numOfPlayers: Int) {
         } else if (_board.isLegOver()) {
             legOver()
         }
-        println("Current Winners:" + _board.getRankings())
         _board.printBoard()
     }
 
     fun legBetAction(id: Int, camel: Camels) {
-        println("DID LEG BET")
         val bet = _board.takeBet(camel)
         if (bet != null) {
             _players[id].addBet(bet)
         } else {
-            //TODO add error reporting
-            moveAction(id)
+            //TODO add error for no leg bets
         }
     }
 
     fun raceBetAction(id: Int, camel: Camels, t: RaceBetTypes) {
-        println("DID RACE BET")
         _board.addRaceBet(RaceBet(camel, id), t)
     }
 
     fun tileAction(id: Int, space: Int, type: TileTypes) {
-        println("DID TILE ACTION")
         _board.tileAction(space, DesertTile(type, id))
     }
 
@@ -66,7 +62,6 @@ class Game(numOfPlayers: Int) {
         val ranking = _board.getRankings()
         calculateOverallBets(_board.getLoserBets(), ranking.first())
         calculateOverallBets(_board.getWinnerBets(), ranking.last())
-
     }
 
     private fun calculateOverallBets(bets: ArrayDeque<RaceBet>, camel: Camels) {
@@ -85,11 +80,14 @@ class Game(numOfPlayers: Int) {
         }
     }
 
-    override fun toString(): String {
-        var playersStr = _players.map { it.toString() }.reduce { a, b -> "$a,$b" }
+     fun getJson(playerNo: Int): String {
+        var othersStr = _players
+            .filterIndexed{ i, _ -> i != playerNo}
+            .map { it.toString() }.reduce { a, b -> "$a,$b" }
         return """
             {
-            "players": {${playersStr}},
+            "me": ${_players[playerNo]}
+            "otherPlayers": [${othersStr}],
             "boardState" : $_board
             }
             """.trimIndent()

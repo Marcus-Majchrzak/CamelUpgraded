@@ -10,7 +10,6 @@ import io.ktor.features.*
 import org.slf4j.event.*
 import io.ktor.websocket.*
 import io.ktor.http.cio.websocket.*
-import io.ktor.network.sockets.*
 import java.time.*
 import java.util.*
 import kotlin.collections.LinkedHashSet
@@ -49,13 +48,14 @@ fun Application.module(testing: Boolean = false) {
         }
 
         val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
+        val gameAdapter = GameAdapter()
         webSocket("/ws/camelupgraded") {
-            val _gameAdapter = GameAdapter()
+
             println("Adding user!")
             val thisConnection = Connection(this)
             connections += thisConnection
             try {
-                val initialResponse = _gameAdapter.getInitiateMessage(thisConnection.name.toString())
+                val initialResponse = gameAdapter.getInitiateMessage(thisConnection.getSecret(), thisConnection.getPlayerNo())
                 println(initialResponse)
                 send(initialResponse)
                 for (frame in incoming) {
@@ -63,14 +63,19 @@ fun Application.module(testing: Boolean = false) {
                     val receivedText = frame.readText()
 
                     //DEBUGGING
-                    val textWithUsername = "[${thisConnection.name}]: $receivedText"
+                    val textWithUsername = "[${thisConnection.getPlayerNo()}]: $receivedText"
                     println(textWithUsername)
                     println(receivedText)
 
                     val response = Klaxon().parse<Action>(receivedText)
-                    _gameAdapter.parseResponse(response)
-                    println(_gameAdapter.getUpdateMessage(thisConnection.name.toString()))
-                    send(_gameAdapter.getUpdateMessage(thisConnection.name.toString()))
+                    val updateMessage: String
+                    synchronized(thisConnection){
+                        gameAdapter.parseResponse(response, thisConnection.getSecret(), thisConnection.getPlayerNo())
+                        updateMessage = gameAdapter.getUpdateMessage(thisConnection.getPlayerNo())
+                    }
+                    println(updateMessage)
+                    send(updateMessage)
+
 
                 }
             } catch (e: Exception) {

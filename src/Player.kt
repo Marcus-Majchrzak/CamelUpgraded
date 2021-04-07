@@ -1,8 +1,7 @@
 package classes
 
-class Player(id: String, name: String?) {
-    private val _id : String = id
-    private var _name: String = name ?: "Player_$id"
+class Player(id: Int) {
+    private var _name: String = "Player $id"
     private var _money: Int = startingCash
     private var _legBets: MutableList<LegBet> = arrayListOf()
 
@@ -39,7 +38,7 @@ class Player(id: String, name: String?) {
         }
 
         return """
-            "$_id": {
+            {
             "name": "$_name",
             "money": $_money,
             "legBets": [$stringLegBet]
