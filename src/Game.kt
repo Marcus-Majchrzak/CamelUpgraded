@@ -5,14 +5,14 @@ class Game(maxPlayers: Int) {
     private val _board = GameBoard()
     private var _players: ArrayList<Player> = arrayListOf()
 
-    fun addPlayer(id: Int){
-        if(_players.size < this._maxPlayers){
+    fun addPlayer(id: Int) {
+        if (_players.size < this._maxPlayers) {
             _players.add(Player(id))
-        }
-        else{
+        } else {
             //TODO error for max players
         }
     }
+
     fun startGame() {
         //TODO
     }
@@ -75,9 +75,9 @@ class Game(maxPlayers: Int) {
         }
     }
 
-     fun getJson(playerNo: Int): String {
+    fun getJson(playerNo: Int): String {
         var othersStr = _players
-            .filterIndexed{ i, _ -> i != playerNo}
+            .filterIndexed { i, _ -> i != playerNo }
             .map { it.toString() }.reduce { a, b -> "$a,$b" }
         return """
             {

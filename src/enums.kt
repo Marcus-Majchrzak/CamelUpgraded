@@ -1,6 +1,5 @@
 package classes
 
-import com.beust.klaxon.JsonObject
 import com.beust.klaxon.TypeAdapter
 import com.beust.klaxon.TypeFor
 import kotlin.reflect.KClass

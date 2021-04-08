@@ -1,25 +1,16 @@
 package classes
 
-import com.beust.klaxon.JsonObject
-import kotlin.collections.ArrayDeque
-import kotlin.collections.Map
-import kotlin.collections.MutableList
-import kotlin.collections.MutableMap
-import kotlin.collections.associateBy
-import kotlin.collections.forEach
-import kotlin.collections.maxBy
 import kotlin.collections.set
-import kotlin.collections.toMutableMap
 
 
 class GameBoard {
     private val _pyramid = DicePyramid()
-    private var _board: MutableList<ArrayDeque<Camels>> = MutableList(numberOfSpaces) { ArrayDeque<Camels>() }
+    private var _board: MutableList<ArrayDeque<Camels>> = MutableList(numberOfSpaces) { ArrayDeque() }
     private var _placedTiles: MutableMap<Int, DesertTile> = mutableMapOf()
     private var _camelLocation: MutableMap<Camels, Int> = Camels.values().associateBy({ it }, { 0 }).toMutableMap()
     private var _camelRankings: ArrayDeque<Camels> = ArrayDeque(Camels.values().toList())
     private var _camelLegBets: Map<Camels, ArrayDeque<LegBet>> =
-        Camels.values().associateBy({ it }, { ArrayDeque<LegBet>() })
+        Camels.values().associateBy({ it }, { ArrayDeque() })
     private var _loserBets: ArrayDeque<RaceBet> = ArrayDeque()
     private var _winnerBets: ArrayDeque<RaceBet> = ArrayDeque()
 
@@ -97,7 +88,7 @@ class GameBoard {
     }
 
     fun legReset() {
-        _camelLegBets = Camels.values().associateBy({ it }, { ArrayDeque<LegBet>() })
+        _camelLegBets = Camels.values().associateBy({ it }, { ArrayDeque() })
         Camels.values().forEach { camel ->
             legBetValues.forEach { bid -> _camelLegBets[camel]?.addFirst(LegBet(camel, bid)) }
         }
@@ -106,7 +97,7 @@ class GameBoard {
 
     fun raceOver(): Boolean {
         //TODO replace how we find out who are winners
-        return _camelLocation.maxBy { it.value }?.value == numberOfSpaces - 1
+        return _camelLocation.maxByOrNull { it.value }?.value == numberOfSpaces - 1
     }
 
     fun takeBet(camel: Camels): LegBet? {
@@ -127,7 +118,7 @@ class GameBoard {
     }
 
     fun getLoserBets(): ArrayDeque<RaceBet> {
-        return _loserBets;
+        return _loserBets
     }
 
     override fun toString(): String {

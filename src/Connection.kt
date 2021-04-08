@@ -1,21 +1,23 @@
 import io.ktor.http.cio.websocket.*
-import java.util.*
 import java.util.concurrent.atomic.*
 import kotlin.random.Random
 
 class Connection(val session: DefaultWebSocketSession) {
     companion object {
         var lastNum = AtomicInteger(0)
+
         //Maps secret -> playerNo
         var secrets: MutableSet<String> = mutableSetOf()
     }
-    private val playerNo = lastNum.getAndIncrement();
+
+    private val playerNo = lastNum.getAndIncrement()
     private val secret = newSecret()
 
-    fun getPlayerNo(): Int{
+    fun getPlayerNo(): Int {
         return playerNo
     }
-    fun getSecret(): String{
+
+    fun getSecret(): String {
         return secret
     }
 
@@ -23,7 +25,7 @@ class Connection(val session: DefaultWebSocketSession) {
     private fun newSecret(): String {
         var newSecret = generateSecret()
         var secretInUse = secrets.contains(newSecret)
-        while (secretInUse){
+        while (secretInUse) {
             newSecret = generateSecret()
             secretInUse = secrets.contains(newSecret)
         }
