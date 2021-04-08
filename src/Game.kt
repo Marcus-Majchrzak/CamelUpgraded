@@ -1,14 +1,9 @@
 package classes
 
 class Game(maxPlayers: Int) {
-    private lateinit var _gameAPI: GameAPI;
     private val _maxPlayers = maxPlayers;
     private val _board = GameBoard()
     private var _players: ArrayList<Player> = arrayListOf()
-
-    fun setAPI(api: GameAPI) {
-        _gameAPI = api
-    }
 
     fun addPlayer(id: Int){
         if(_players.size < this._maxPlayers){
