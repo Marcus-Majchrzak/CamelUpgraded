@@ -1,19 +1,20 @@
-import classes.*
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import com.fasterxml.jackson.databind.*
-import io.ktor.jackson.*
-import io.ktor.features.*
-import org.slf4j.event.*
-import io.ktor.websocket.*
-import io.ktor.http.cio.websocket.*
-import java.time.*
-import java.util.*
-import kotlin.collections.LinkedHashSet
+import classes.Action
 import com.beust.klaxon.Klaxon
+import com.fasterxml.jackson.databind.SerializationFeature
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.http.cio.websocket.*
+import io.ktor.jackson.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.websocket.*
+import org.slf4j.event.Level
+import java.time.Duration
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashSet
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -31,7 +32,7 @@ fun Application.module(testing: Boolean = false) {
         filter { call -> call.request.path().startsWith("/") }
     }
 
-    install(io.ktor.websocket.WebSockets) {
+    install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
         timeout = Duration.ofSeconds(15)
         maxFrameSize = Long.MAX_VALUE
@@ -55,7 +56,9 @@ fun Application.module(testing: Boolean = false) {
             val thisConnection = Connection(this)
             connections += thisConnection
             try {
-                val initialResponse = gameAdapter.getInitiateMessage(thisConnection.getSecret(), thisConnection.getPlayerNo())
+                gameAdapter.addPlayer(thisConnection.getPlayerNo());
+                val initialResponse =
+                    gameAdapter.getInitiateMessage(thisConnection.getSecret(), thisConnection.getPlayerNo())
                 println(initialResponse)
                 send(initialResponse)
                 for (frame in incoming) {
@@ -68,14 +71,16 @@ fun Application.module(testing: Boolean = false) {
                     println(receivedText)
 
                     val response = Klaxon().parse<Action>(receivedText)
-                    val updateMessage: String
-                    synchronized(thisConnection){
+                    val updateMessages: ArrayList<String> = arrayListOf()
+                    synchronized(thisConnection) {
                         gameAdapter.parseResponse(response, thisConnection.getSecret(), thisConnection.getPlayerNo())
-                        updateMessage = gameAdapter.getUpdateMessage(thisConnection.getPlayerNo())
+                        connections.forEach { c ->
+                            updateMessages.add(gameAdapter.getUpdateMessage(c.getPlayerNo()))
+                        }
                     }
-                    println(updateMessage)
-                    send(updateMessage)
-
+                    connections.forEachIndexed { i, c ->
+                        c.session.send(updateMessages[i])
+                    }
 
                 }
             } catch (e: Exception) {

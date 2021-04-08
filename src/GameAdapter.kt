@@ -1,7 +1,7 @@
 import classes.*
 
 class GameAdapter {
-    private val _game = Game(0)
+    private val _game = Game(8)
 
     fun getInitiateMessage(secret: String, playerNo: Int): String {
         return """
@@ -23,19 +23,19 @@ class GameAdapter {
     }
 
     fun parseResponse(response: Action?, serverSecret: String, playerNo: Int) {
-        if (response != null ) {
+        if (response != null) {
             val userSecret = getUserSecret(response) ?: throw IllegalArgumentException("Invalid Action")
-            if(userSecret == serverSecret){
+            if (userSecret == serverSecret) {
                 parseAction(response, playerNo)
-            }
-            else {
+            } else {
                 throw IllegalArgumentException("Invalid Secret")
             }
         } else {
             throw IllegalArgumentException("Invalid Request")
         }
     }
-    private fun parseAction(response: Action, id: Int){
+
+    private fun parseAction(response: Action, id: Int) {
         when (response.action) {
             "move" -> _game.moveAction(id)
             "leg-bet" -> {
@@ -61,6 +61,7 @@ class GameAdapter {
             }
         }
     }
+
     private fun getUserSecret(response: Action): String? {
         return when (response.action) {
             "move" -> (response as ActionMove).id
@@ -70,7 +71,9 @@ class GameAdapter {
             else -> null
         }
     }
-    fun addPlayer(id: Int){
+
+    @Synchronized
+    fun addPlayer(id: Int) {
         _game.addPlayer(id)
     }
 }

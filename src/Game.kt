@@ -4,9 +4,11 @@ class Game(maxPlayers: Int) {
     private val _maxPlayers = maxPlayers;
     private val _board = GameBoard()
     private var _players: ArrayList<Player> = arrayListOf()
+    private var _playerTurn: Int = 0
 
     fun addPlayer(id: Int) {
         if (_players.size < this._maxPlayers) {
+            println("MEMES")
             _players.add(Player(id))
         } else {
             //TODO error for max players
@@ -18,6 +20,7 @@ class Game(maxPlayers: Int) {
     }
 
     fun moveAction(id: Int) {
+        if (_playerTurn != id) return
         _board.moveAction()
         _players[id].changeMoney(1)
         if (_board.raceOver()) {
@@ -26,23 +29,36 @@ class Game(maxPlayers: Int) {
             legOver()
         }
         _board.printBoard()
+        incrementTurn()
     }
 
     fun legBetAction(id: Int, camel: Camels) {
+        if (_playerTurn != id) return
         val bet = _board.takeBet(camel)
         if (bet != null) {
             _players[id].addBet(bet)
         } else {
             //TODO add error for no leg bets
         }
+        incrementTurn()
     }
 
     fun raceBetAction(id: Int, camel: Camels, t: RaceBetTypes) {
+        if (_playerTurn != id) return
         _board.addRaceBet(RaceBet(camel, id), t)
+        incrementTurn()
     }
 
     fun tileAction(id: Int, space: Int, type: TileTypes) {
+        if (_playerTurn != id) return
         _board.tileAction(space, DesertTile(type, id))
+        incrementTurn()
+    }
+
+    private fun incrementTurn() {
+        _playerTurn = (_playerTurn + 1) % _players.size
+        println(">>>" + _playerTurn)
+        println(">>>" + _players.size)
     }
 
     private fun legOver() {
@@ -76,13 +92,15 @@ class Game(maxPlayers: Int) {
     }
 
     fun getJson(playerNo: Int): String {
-        var othersStr = _players
-            .filterIndexed { i, _ -> i != playerNo }
-            .map { it.toString() }.reduce { a, b -> "$a,$b" }
+        val playerStr =
+            _players
+                .map { it.toString() }
+                .reduce { a, b -> "$a,$b" }
+
         return """
             {
-            "me": ${_players[playerNo]}
-            "otherPlayers": [${othersStr}],
+            "me": ${_players[playerNo]},
+            "players": [${playerStr}],
             "boardState" : $_board
             }
             """.trimIndent()
