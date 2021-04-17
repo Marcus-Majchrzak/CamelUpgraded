@@ -57,8 +57,6 @@ class Game(maxPlayers: Int) {
 
     private fun incrementTurn() {
         _playerTurn = (_playerTurn + 1) % _players.size
-        println(">>>" + _playerTurn)
-        println(">>>" + _players.size)
     }
 
     private fun legOver() {
@@ -99,9 +97,10 @@ class Game(maxPlayers: Int) {
 
         return """
             {
-            "me": ${_players[playerNo]},
+            "me": ${playerNo},
             "players": [${playerStr}],
-            "boardState" : $_board
+            "boardState" : $_board,
+            "playerTurn" : $_playerTurn
             }
             """.trimIndent()
     }
