@@ -37,20 +37,20 @@ fun stringToRaceBetType(type: String): RaceBetTypes? {
     }
 }
 
-enum class TileTypes {
+enum class TileEffectTypes {
     OASIS,
     MIRAGE
 }
 
-fun stringToTileType(type: String): TileTypes? {
+fun stringToTileType(type: String): TileEffectTypes? {
     return when (type.toLowerCase()) {
-        "oasis" -> TileTypes.OASIS
-        "mirage" -> TileTypes.MIRAGE
+        "oasis" -> TileEffectTypes.OASIS
+        "mirage" -> TileEffectTypes.MIRAGE
         else -> null
     }
 }
 
-data class DesertTile(val type: TileTypes, val playerId: Int)
+data class DesertTile(val effect: TileEffectTypes, val playerId: Int)
 data class RaceBet(val camel: Camels, val playerId: Int)
 data class LegBet(val camel: Camels, val value: Int)
 data class DiceRoll(val camel: Camels, val move: Int)

@@ -49,7 +49,7 @@ class Game(maxPlayers: Int) {
         incrementTurn()
     }
 
-    fun tileAction(id: Int, space: Int, type: TileTypes) {
+    fun tileAction(id: Int, space: Int, type: TileEffectTypes) {
         if (_playerTurn != id) return
         _board.tileAction(space, DesertTile(type, id))
         incrementTurn()
@@ -90,6 +90,7 @@ class Game(maxPlayers: Int) {
     }
 
     fun getJson(playerNo: Int): String {
+        println("This is the gameboard state: ${_board}")
         val playerStr =
             _players
                 .map { it.toString() }

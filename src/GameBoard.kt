@@ -1,5 +1,6 @@
 package classes
 
+import com.beust.klaxon.Klaxon
 import kotlin.collections.set
 
 
@@ -44,9 +45,9 @@ class GameBoard {
     }
 
     private fun withDesertTileMovement(space: Int): Int {
-        return when (_placedTiles[space]?.type) {
-            TileTypes.MIRAGE -> space - 1
-            TileTypes.OASIS -> space + 1
+        return when (_placedTiles[space]?.effect) {
+            TileEffectTypes.MIRAGE -> space - 1
+            TileEffectTypes.OASIS -> space + 1
             else -> space
         }
     }
@@ -62,7 +63,7 @@ class GameBoard {
     }
 
     fun tileAction(space: Int, tile: DesertTile) {
-        _placedTiles.filter { it.value.playerId != tile.playerId }
+        _placedTiles = _placedTiles.filter { it.value.playerId != tile.playerId } as MutableMap<Int, DesertTile>
         if (_placedTiles[space + 1] == null && _placedTiles[space - 1] == null && space >= 1 && space < numberOfSpaces - 2) {
             _placedTiles[space] = tile
         }
@@ -131,6 +132,10 @@ class GameBoard {
             }.toString()
         }.toString()
 
+        //Stringify placedTiles
+
+        val placedTilesStr = Klaxon().toJsonString(_placedTiles)
+
         //Stringify Leg Bet
         val stringLegBet = _camelLegBets.map { bets ->
             "\"${bets.key.toString().toLowerCase()}\":" +
@@ -154,7 +159,8 @@ class GameBoard {
                         {
                             "camelPositions": ${stringLocation},
                             "legBids" : {${stringLegBet}},
-                            "diceRolled" : [$diceRolled]
+                            "diceRolled" : [$diceRolled],
+                            "placedTiles" : $placedTilesStr
                         }
                     """.trimIndent()
     }
