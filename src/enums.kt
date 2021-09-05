@@ -12,6 +12,14 @@ enum class Camels {
     WHITE
 }
 
+enum class IncomeReason {
+    MOVE,
+    LEGBET,
+    TILES,
+    RACEWINNER,
+    RACELOSER
+}
+
 fun stringToCamel(camel: String): Camels? {
     return when (camel.toLowerCase()) {
         "blue" -> Camels.BLUE

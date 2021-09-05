@@ -46,7 +46,7 @@ class GameBoard(game: Game) {
     }
 
     private fun withDesertTileMovement(space: Int): Int {
-        _placedTiles[space]?.let { _game.changePlayerMoney(it.playerId, 1) }
+        _placedTiles[space]?.let { _game.changePlayerMoney(it.playerId, 1, IncomeReason.TILES) }
         return when (_placedTiles[space]?.effect) {
             TileEffectTypes.MIRAGE -> space - 1
             TileEffectTypes.OASIS -> space + 1

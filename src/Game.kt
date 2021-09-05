@@ -19,14 +19,14 @@ class Game(maxPlayers: Int) {
         //TODO
     }
 
-    fun changePlayerMoney(id: Int, money: Int) {
-        _players[id].changeMoney(money)
+    fun changePlayerMoney(id: Int, money: Int, reason: IncomeReason) {
+        _players[id].changeMoney(money, reason)
     }
 
     fun moveAction(id: Int) {
-        if (_playerTurn != id) return
+        if (_playerTurn != id || _board.raceOver()) return
         _board.moveAction()
-        changePlayerMoney(id, 1)
+        changePlayerMoney(id, 1, IncomeReason.MOVE)
         if (_board.raceOver()) {
             raceOver()
         } else if (_board.isLegOver()) {
@@ -37,7 +37,7 @@ class Game(maxPlayers: Int) {
     }
 
     fun legBetAction(id: Int, camel: Camels) {
-        if (_playerTurn != id) return
+        if (_playerTurn != id || _board.raceOver()) return
         val bet = _board.takeBet(camel)
         if (bet != null) {
             _players[id].addBet(bet)
@@ -48,19 +48,23 @@ class Game(maxPlayers: Int) {
     }
 
     fun raceBetAction(id: Int, camel: Camels, t: RaceBetTypes) {
-        if (_playerTurn != id) return
+        if (_playerTurn != id || _board.raceOver()) return
         _board.addRaceBet(RaceBet(camel, id), t)
         incrementTurn()
     }
 
     fun tileAction(id: Int, space: Int, type: TileEffectTypes) {
-        if (_playerTurn != id) return
+        if (_playerTurn != id || _board.raceOver()) return
         _board.tileAction(space, DesertTile(type, id))
         incrementTurn()
     }
 
     private fun incrementTurn() {
-        _playerTurn = (_playerTurn + 1) % _players.size
+        if (_board.raceOver()) {
+            _playerTurn = -1
+        } else {
+            _playerTurn = (_playerTurn + 1) % _players.size
+        }
     }
 
     private fun legOver() {
@@ -73,22 +77,22 @@ class Game(maxPlayers: Int) {
     private fun raceOver() {
         legOver()
         val ranking = _board.getRankings()
-        calculateOverallBets(_board.getLoserBets(), ranking.first())
-        calculateOverallBets(_board.getWinnerBets(), ranking.last())
+        calculateOverallBets(_board.getLoserBets(), ranking.first(), IncomeReason.RACEWINNER)
+        calculateOverallBets(_board.getWinnerBets(), ranking.last(), IncomeReason.RACELOSER)
     }
 
-    private fun calculateOverallBets(bets: ArrayDeque<RaceBet>, camel: Camels) {
+    private fun calculateOverallBets(bets: ArrayDeque<RaceBet>, camel: Camels, reason: IncomeReason) {
         var numCorrect = 0
         bets.forEach { bet ->
             if (bet.camel == camel) {
                 if (numCorrect < raceBetValues.size) {
-                    _players[bet.playerId].changeMoney(raceBetValues[numCorrect])
+                    _players[bet.playerId].changeMoney(raceBetValues[numCorrect], reason)
                     numCorrect++
                 } else {
-                    _players[bet.playerId].changeMoney(1)
+                    _players[bet.playerId].changeMoney(1, reason)
                 }
             } else {
-                _players[bet.playerId].changeMoney(-1)
+                _players[bet.playerId].changeMoney(-1, reason)
             }
         }
     }
