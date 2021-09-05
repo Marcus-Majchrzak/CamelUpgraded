@@ -1,5 +1,7 @@
 package classes
 
+import com.beust.klaxon.Klaxon
+
 class Player(id: Int) {
     private var _name: String = "Player $id"
     private var _money: Int = startingCash
@@ -25,25 +27,11 @@ class Player(id: Int) {
     }
 
     override fun toString(): String {
-
-        val stringLegBet = if (_legBets.size > 0) {
-            _legBets.map { bet ->
-                """
-            {
-                "value": ${bet.value},
-                "camel": "${bet.camel.toString().toLowerCase()}"
-            }
-            """
-            }.reduce { a, b -> "$a,\n$b" }
-        } else {
-            ""
-        }
-
         return """
             {
             "name": "$_name",
             "money": $_money,
-            "legBets": [$stringLegBet]
+            "legBets": ${Klaxon().toJsonString(_legBets)}
             }""".trimIndent()
     }
 }

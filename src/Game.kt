@@ -1,8 +1,8 @@
 package classes
 
 class Game(maxPlayers: Int) {
-    private val _maxPlayers = maxPlayers;
-    private val _board = GameBoard()
+    private val _maxPlayers = maxPlayers
+    private val _board = GameBoard(this)
     private var _players: ArrayList<Player> = arrayListOf()
     private var _playerTurn: Int = 0
 
@@ -19,10 +19,14 @@ class Game(maxPlayers: Int) {
         //TODO
     }
 
+    fun changePlayerMoney(id: Int, money: Int) {
+        _players[id].changeMoney(money)
+    }
+
     fun moveAction(id: Int) {
         if (_playerTurn != id) return
         _board.moveAction()
-        _players[id].changeMoney(1)
+        changePlayerMoney(id, 1)
         if (_board.raceOver()) {
             raceOver()
         } else if (_board.isLegOver()) {

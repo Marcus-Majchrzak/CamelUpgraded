@@ -7,6 +7,9 @@ class DicePyramid {
     private var diceOut: MutableList<DiceRoll> = mutableListOf()
 
     fun rollDice(): DiceRoll {
+        if (diceIn.size == 0) {
+            resetPyramid()
+        }
         val color = diceIn.random()
         diceIn.remove(color)
 
@@ -18,7 +21,7 @@ class DicePyramid {
         return DiceRoll(color, number)
     }
 
-    fun resetPyramid() {
+    private fun resetPyramid() {
         diceIn = Camels.values().toMutableList()
         diceOut = mutableListOf()
     }

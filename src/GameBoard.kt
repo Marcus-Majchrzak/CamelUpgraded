@@ -4,7 +4,8 @@ import com.beust.klaxon.Klaxon
 import kotlin.collections.set
 
 
-class GameBoard {
+class GameBoard(game: Game) {
+    private val _game = game
     private val _pyramid = DicePyramid()
     private var _board: MutableList<ArrayDeque<Camels>> = MutableList(numberOfSpaces) { ArrayDeque() }
     private var _placedTiles: MutableMap<Int, DesertTile> = mutableMapOf()
@@ -45,6 +46,7 @@ class GameBoard {
     }
 
     private fun withDesertTileMovement(space: Int): Int {
+        _placedTiles[space]?.let { _game.changePlayerMoney(it.playerId, 1) }
         return when (_placedTiles[space]?.effect) {
             TileEffectTypes.MIRAGE -> space - 1
             TileEffectTypes.OASIS -> space + 1
@@ -53,13 +55,8 @@ class GameBoard {
     }
 
     fun moveAction() {
-        if (!isLegOver()) {
-            moveCamel(_pyramid.rollDice())
-            //TODO: Add lazy evaluation
-            updateRankings()
-        } else {
-            //TODO FLOW IF CAN'T ROLL - should never happen
-        }
+        moveCamel(_pyramid.rollDice())
+        updateRankings()
     }
 
     fun tileAction(space: Int, tile: DesertTile) {
@@ -93,7 +90,6 @@ class GameBoard {
         Camels.values().forEach { camel ->
             legBetValues.forEach { bid -> _camelLegBets[camel]?.addFirst(LegBet(camel, bid)) }
         }
-        _pyramid.resetPyramid()
     }
 
     fun raceOver(): Boolean {
@@ -123,45 +119,14 @@ class GameBoard {
     }
 
     override fun toString(): String {
-        //TODO MAKE NOT SPAGHETTI
-
-        //Stringify CamelLocation
-        val stringLocation = _board.map { space ->
-            space.map {
-                "\"${it.toString().toLowerCase()}\""
-            }.toString()
-        }.toString()
-
-        //Stringify placedTiles
-
-        val placedTilesStr = Klaxon().toJsonString(_placedTiles)
-
-        //Stringify Leg Bet
-        val stringLegBet = _camelLegBets.map { bets ->
-            "\"${bets.key.toString().toLowerCase()}\":" +
-                    bets.value.map { bet ->
-                        bet.value
-                    }.toString()
-        }.reduce { a, b -> "$a,$b" }
-
-        //Stringify diceRolled
-        val diceRolled = if (_pyramid.diceRolled().isNotEmpty()) {
-            _pyramid.diceRolled().map { roll ->
-                """{
-                "color": "${roll.camel.toString().toLowerCase()}",
-                "value": ${roll.move}
-                }
-            """.trimMargin()
-            }.reduce { a, b -> "$a,$b" }
-        } else ""
-
+        val klax = Klaxon()
         return """
-                        {
-                            "camelPositions": ${stringLocation},
-                            "legBids" : {${stringLegBet}},
-                            "diceRolled" : [$diceRolled],
-                            "placedTiles" : $placedTilesStr
-                        }
-                    """.trimIndent()
+            {
+                "camelPositions": ${klax.toJsonString(_board)},
+                "legBids" : ${klax.toJsonString(_camelLegBets)},
+                "diceRolled" : ${klax.toJsonString(_pyramid.diceRolled())},
+                "placedTiles" : ${klax.toJsonString(_placedTiles)}
+            }
+        """.trimIndent()
     }
 }
